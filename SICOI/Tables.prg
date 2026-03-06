@@ -204,8 +204,12 @@ OpenOrCreateDBF( "conti", a, { ;
 { "DESCR" , {|| DESCR } }, ;
 { "TIPO" , {|| TIPO } } ;
 } )
-RETURN
 
+SELECT CONTI
+IF LastRec() == 0
+SeedPianoConti_ImpresaIndividuale() // <-- nuovo
+ENDIF
+RETURN
 // ---------- Helper generico ----------
 STATIC PROCEDURE OpenOrCreateDBF( cName, aStruct, aTags )
 LOCAL cDbf := hb_FNameMerge( s_cDataDir, "", Lower( cName ) + ".dbf" )
