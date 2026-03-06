@@ -16,8 +16,10 @@ READ
 IF LastKey() == K_ESC ; RETURN ; ENDIF
 
 // Ricalcola padre/livello/Tipo/Sezione dal codice aggiornato
-nLiv := LevelFromCode( cConto )
-cPadre := ParentFromCode( cConto )
+ 
+@ 5,2 SAY "Sezione bil:" ; @ 5,20 SAY cSez
+@ 6,2 SAY "Tipo conto:" ; @ 6,20 SAY cTipo
+
 InferTipoSezione( cConto, @cTipo, @cSez )
 
 @ 5,2 SAY "Raggrupp.:" ; @ 5,20 GET cRag PICTURE "@!"
