@@ -47,7 +47,24 @@ OpenOrCreateDBF( "iva", a, { ;
 { "CODICE", {|| CODIVA } }, ;
 { "DESCR" , {|| DESCR } }, ;
 { "ALIQ" , {|| STR( ALIQ, 5, 2 ) } } ;
-} )
+} ) 
+STATIC PROCEDURE EnsureIva22()
+LOCAL nSel := Select(), lFound
+SELECT IVA
+ordSetFocus( "CODICE" )
+lFound := DBSeek( "22" )
+IF ! lFound
+APPEND BLANK
+REPLACE CODIVA WITH "22"
+REPLACE DESCR WITH "IVA ordinaria 22%"
+REPLACE ALIQ WITH 22.00
+REPLACE ESENTE WITH .F.
+REPLACE NATURA WITH ""
+DBCommit()
+ENDIF
+SELECT ( nSel )
+RETURN
+
 RETURN
 
 // ---------- Condizioni di pagamento ----------
