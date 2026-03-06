@@ -1,0 +1,187 @@
+PROCEDURE SeedPianoConti_ImpresaIndividuale()
+LOCAL nRec0 := 0
+SELECT ( cConti )
+nRec0 := LastRec()
+IF nRec0 > 0
+RETURN // già popolato
+ENDIF
+
+// === ELENCO CONTI ===
+// Formato: { "CODICE", "DESCRIZIONE" }
+// NB: Mappatura Tipo/Sezione automatica via InferTipoSezione()
+LOCAL aConti := { ;
+/* --- 01 IMMOBILIZZAZIONI IMMATERIALI --- */
+{ "01.00", "Immobilizzazioni immateriali" }, ;
+{ "01.01", "Avviamento" }, ;
+{ "01.02", "Diritti di brevetto" }, ;
+{ "01.03", "Concessioni, licenze e marchi" }, ;
+{ "01.04", "Software" }, ;
+{ "01.05", "Altre immobilizzazioni immateriali" }, ;
+
+/* --- 02 IMMOBILIZZAZIONI MATERIALI --- */
+{ "02.00", "Immobilizzazioni materiali" }, ;
+{ "02.01", "Terreni e fabbricati" }, ;
+{ "02.02", "Impianti e macchinari" }, ;
+{ "02.03", "Attrezzature industriali e commerciali" }, ;
+{ "02.04", "Mobili e arredi" }, ;
+{ "02.05", "Macchine d'ufficio" }, ;
+{ "02.06", "Automezzi" }, ;
+{ "02.07", "Altre immobilizzazioni materiali" }, ;
+
+/* --- 03 IMMOBILIZZAZIONI FINANZIARIE --- */
+{ "03.00", "Immobilizzazioni finanziarie" }, ;
+{ "03.01", "Partecipazioni" }, ;
+{ "03.02", "Titoli" }, ;
+{ "03.03", "Crediti immobilizzati" }, ;
+
+/* --- 04 RIMANENZE --- */
+{ "04.00", "Rimanenze" }, ;
+{ "04.01", "Materie prime" }, ;
+{ "04.02", "Merci" }, ;
+{ "04.03", "Prodotti finiti" }, ;
+{ "04.04", "Lavori in corso" }, ;
+
+/* --- 05 CREDITI COMMERCIALI --- */
+{ "05.00", "Crediti commerciali" }, ;
+{ "05.01", "Clienti Italia" }, ;
+{ "05.02", "Clienti CEE" }, ;
+{ "05.03", "Clienti extra-CEE" }, ;
+{ "05.04", "Cambiali attive" }, ;
+{ "05.05", "Effetti all'incasso" }, ;
+
+/* --- 06 CREDITI DIVERSI --- */
+{ "06.00", "Crediti diversi" }, ;
+{ "06.01", "Crediti verso Erario" }, ;
+{ "06.02", "Crediti per IVA" }, ;
+{ "06.03", "Crediti verso dipendenti" }, ;
+{ "06.04", "Crediti verso istituti previdenziali" }, ;
+
+/* --- 08 DISPONIBILITA' LIQUIDE --- */
+{ "08.00", "Disponibilità liquide" }, ;
+{ "08.01", "Cassa" }, ;
+{ "08.02", "Banca c/c" }, ;
+{ "08.03", "Assegni in cassa" }, ;
+
+/* --- 09 RATEI E RISCONTI ATTIVI --- */
+{ "09.00", "Ratei e risconti attivi" }, ;
+{ "09.01", "Ratei attivi" }, ;
+{ "09.02", "Risconti attivi" }, ;
+
+/* --- 10 PATRIMONIO NETTO --- */
+{ "10.00", "Patrimonio netto" }, ;
+{ "10.01", "Capitale proprio" }, ;
+{ "10.02", "Utile/Perdita portata a nuovo" }, ;
+
+/* --- 11 FONDI PER RISCHI E ONERI --- */
+{ "11.00", "Fondi per rischi e oneri" }, ;
+{ "11.01", "Fondo TFR dipendenti" }, ;
+{ "11.02", "Fondi manutenzioni programmate" }, ;
+
+/* --- 12 TRATTAMENTO FINE RAPPORTO --- */
+{ "12.00", "Trattamento fine rapporto" }, ;
+
+/* --- 13 DEBITI FINANZIARI --- */
+{ "13.00", "Debiti finanziari" }, ;
+{ "13.01", "Mutui passivi" }, ;
+{ "13.02", "Finanziamenti bancari" }, ;
+
+/* --- 14 DEBITI COMMERCIALI --- */
+{ "14.00", "Debiti commerciali" }, ;
+{ "14.01", "Fornitori Italia" }, ;
+{ "14.02", "Fornitori CEE" }, ;
+{ "14.03", "Fornitori extra-CEE" }, ;
+{ "14.04", "Cambiali passive" }, ;
+
+/* --- 15 DEBITI DIVERSI --- */
+{ "15.00", "Debiti diversi" }, ;
+{ "15.01", "Debiti verso Erario" }, ;
+{ "15.02", "Debiti per IVA da versare" }, ;
+{ "15.03", "Debiti verso dipendenti" }, ;
+{ "15.04", "Debiti verso istituti previdenziali" }, ;
+
+/* --- 16 RATEI E RISCONTI PASSIVI --- */
+{ "16.00", "Ratei e risconti passivi" }, ;
+{ "16.01", "Ratei passivi" }, ;
+{ "16.02", "Risconti passivi" }, ;
+
+/* --- 18 CONTI TRANSITORI E DIVERSI --- */
+{ "18.00", "Conti transitori e diversi" }, ;
+{ "18.01", "Banca c/operazioni" }, ;
+{ "18.02", "Sospesi di cassa" }, ;
+
+/* --- 19 CONTI DI SISTEMI MINORI --- */
+{ "19.00", "Conti di sistemi minori" }, ;
+{ "19.01", "Debiti v/terzi" }, ;
+{ "19.11", "C/liquidazioni" }, ;
+
+/* --- 30-39 COSTI (oneri) --- */
+{ "30.00", "Acquisti merci e materie" }, ;
+{ "30.01", "Acquisti merci" }, ;
+{ "30.02", "Resi su acquisti" }, ;
+{ "31.00", "Costi per servizi" }, ;
+{ "31.01", "Spese di trasporto" }, ;
+{ "31.02", "Consulenze" }, ;
+{ "31.03", "Canoni e noleggi" }, ;
+{ "32.00", "Costi del personale" }, ;
+{ "32.01", "Retribuzioni" }, ;
+{ "32.02", "Oneri previdenziali" }, ;
+{ "33.00", "Godimento beni di terzi" }, ;
+{ "33.01", "Canoni di leasing" }, ;
+{ "34.00", "Ammortamenti immateriali" }, ;
+{ "34.01", "Ammortamento avviamento" }, ;
+{ "35.00", "Ammortamenti materiali" }, ;
+{ "35.01", "Ammortamento impianti e macchine" }, ;
+{ "35.02", "Ammortamento automezzi" }, ;
+{ "36.00", "Svalutazioni" }, ;
+{ "37.00", "Accantonamenti per rischi" }, ;
+{ "38.00", "Altri accantonamenti" }, ;
+{ "39.00", "Oneri diversi" }, ;
+{ "39.01", "Oneri fiscali diversi" }, ;
+{ "39.02", "Perdite su crediti" }, ;
+
+/* --- 40 PROVENTI FINANZIARI (ricavi) --- */
+{ "40.00", "Proventi finanziari" }, ;
+{ "40.10", "Interessi attivi v/clienti" }, ;
+{ "40.11", "Interessi attivi bancari" }, ;
+{ "40.12", "Altri proventi finanziari" }, ;
+
+/* --- 41 ONERI FINANZIARI (costi) --- */
+{ "41.00", "Oneri finanziari" }, ;
+{ "41.01", "Interessi passivi v/fornitori" }, ;
+{ "41.02", "Interessi passivi bancari" }, ;
+{ "41.03", "Interessi passivi su mutui" }, ;
+{ "41.04", "Oneri finanziari diversi" }, ;
+
+/* --- 60/61 STRAORDINARI --- */
+{ "60.00", "Proventi straordinari" }, ;
+{ "61.00", "Oneri straordinari" }, ;
+
+/* --- 70 IMPOSTE --- */
+{ "70.00", "Imposte dell'esercizio" }, ;
+
+/* --- 90 CONTI DI RISULTATO (tecnici) --- */
+{ "90.00", "Conti di risultato" }, ;
+{ "90.01", "Conto di risultato economico" } ;
+}
+
+// === INSERIMENTO ===
+LOCAL i, cCod, cDes, cTipo, cSez, nLiv, cPad
+FOR i := 1 TO Len( aConti )
+cCod := aConti[i,1]
+cDes := aConti[i,2]
+nLiv := LevelFromCode( cCod )
+cPad := ParentFromCode( cCod )
+InferTipoSezione( cCod, @cTipo, @cSez )
+
+APPEND BLANK
+REPLACE CONTO WITH cCod
+REPLACE DESCR WITH cDes
+REPLACE LIVELLO WITH nLiv
+REPLACE PADRE WITH cPad
+REPLACE TIPO WITH cTipo
+REPLACE SEZBIL WITH cSez
+REPLACE DTCREA WITH Date()
+REPLACE UTECREA WITH "SEED"
+NEXT
+DBCommit()
+RETURN
