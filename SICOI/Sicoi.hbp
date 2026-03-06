@@ -1,0 +1,19 @@
+# sicoi.hbp
+sicoi.prg
+tables.prg
+ui_menu.prg
+ui_conti.prg
+ui_common.prg
+
+# RDD + console
+-lhbvm
+-lhbmain
+-lhbrtl
+-lhbmacro
+-lhbpp
+-lhbcplr
+-lhbcodepage
+-lhbct
+-lhbrdd
+-lhbdbf
+-lhbdbfcdx
