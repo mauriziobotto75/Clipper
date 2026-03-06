@@ -241,3 +241,105 @@ ENDIF
 SELECT ( nSel )
 
 RETURN cPre + "." + PadL( LTrim( Str( nMax + 1 ) ), 2, "0" )
+
+// Torna .T. se codice valido: "NN.NN" o "NN.NN.NN"
+FUNCTION IsValidContoCode( cCode )
+LOCAL c := AllTrim( cCode ), a, i
+IF Empty( c ) ; RETURN .F. ; ENDIF
+a := hb_ATokens( c, "." )
+IF Len( a ) < 2 .OR. Len( a ) > 3
+RETURN .F.
+ENDIF
+FOR i := 1 TO Len( a )
+IF Len( a[i] ) != 2 .OR. ! IsDigits( a[i] )
+RETURN .F.
+ENDIF
+NEXT
+RETURN .T.
+
+FUNCTION IsDigits( c )
+LOCAL i
+IF Empty( c ) ; RETURN .F. ; ENDIF
+FOR i := 1 TO Len( c )
+IF !( SubStr( c, i, 1 ) $ "0123456789" )
+RETURN .F.
+ENDIF
+NEXT
+RETURN .T.
+
+// Calcola LIVELLO (2 parti = 2; 3 parti = 3)
+FUNCTION LevelFromCode( cCode )
+RETURN Len( hb_ATokens( AllTrim( cCode ), "." ) )
+
+// Padre dal codice: "01.02.03" -> "01.02"; "01.00" -> "" (nessun padre)
+FUNCTION ParentFromCode( cCode )
+LOCAL a := hb_ATokens( AllTrim( cCode ), "." )
+DO CASE
+CASE Len( a ) == 3 ; RETURN a[1] + "." + a[2]
+CASE Len( a ) == 2 ; RETURN ""
+OTHERWISE ; RETURN ""
+ENDCASE
+
+// Prossimo figlio: dato "01.00" -> cerca figli "01.00.NN" e propone il prossimo
+FUNCTION NextChildCodeSICOI( cPadre )
+LOCAL cPre := AllTrim( cPadre ), a := hb_ATokens( cPre, "." ), nMax := 0, cTmp, a2
+LOCAL nSel := Select()
+IF ! IsValidContoCode( cPre ) .OR. LevelFromCode( cPre ) != 2
+RETURN "" // per semplicità generiamo figli solo al livello 2
+ENDIF
+
+SELECT ( cConti )
+ordSetFocus( "PADRE" )
+IF DBSeek( cPre )
+DO WHILE ! Eof() .AND. PADRE == cPre
+cTmp := CONTO
+a2 := hb_ATokens( cTmp, "." )
+IF Len( a2 ) == 3
+nMax := Max( nMax, Val( a2[3] ) )
+ENDIF
+SKIP
+ENDDO
+ENDIF
+SELECT ( nSel )
+
+RETURN cPre + "." + PadL( LTrim( Str( nMax + 1 ) ), 2, "0" )
+
+// Inferisce TIPO e SEZIONE in base alla classe (prime 2 cifre)
+FUNCTION InferTipoSezione( cCode, @cTipo, @cSez )
+LOCAL cClass := Left( AllTrim( cCode ), 2 )
+cTipo := "M" // default Memo/altro
+cSez := "SP"
+
+// Mappatura (derivata dal tuo schema in foto):
+// 01..09 -> Attivo (SP)
+// 10..19 -> Passivo (SP)
+// 30..39 -> Costi (CE) (oneri, costi)
+// 40 -> Proventi finanziari (CE) -> Ricavi
+// 41 -> Oneri finanziari (CE) -> Costi
+// 60 -> Proventi straordinari (CE) -> Ricavi
+// 61 -> Oneri straordinari (CE) -> Costi
+// 70 -> Imposte d'esercizio (CE) -> Costi
+// 90 -> Conti di risultato (CE) -> Memo/tecnici (lasciamo "M")
+DO CASE
+CASE Val( cClass ) >= 1 .AND. Val( cClass ) <= 9
+cTipo := "A" ; cSez := "SP"
+CASE Val( cClass ) >= 10 .AND. Val( cClass ) <= 19
+cTipo := "P" ; cSez := "SP"
+CASE Val( cClass ) >= 30 .AND. Val( cClass ) <= 39
+cTipo := "C" ; cSez := "CE"
+CASE cClass == "40"
+cTipo := "R" ; cSez := "CE"
+CASE cClass == "41"
+cTipo := "C" ; cSez := "CE"
+CASE cClass == "60"
+cTipo := "R" ; cSez := "CE"
+CASE cClass == "61"
+cTipo := "C" ; cSez := "CE"
+CASE cClass == "70"
+cTipo := "C" ; cSez := "CE"
+CASE cClass == "90"
+cTipo := "M" ; cSez := "CE"
+OTHERWISE
+cTipo := "M" ; cSez := "SP"
+ENDCASE
+RETURN NIL
