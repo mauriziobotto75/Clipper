@@ -132,6 +132,10 @@ REPLACE UTECREA WITH cUte
 ordSetFocus( "KCONT" )
 DBCommit()
 RETURN
+FUNCTION IsClasseCostoStandard( cCode )
+LOCAL cClass := Left( AllTrim( cCode ), 2 )
+LOCAL n := Val( cClass )
+RETURN ( n >= 30 .AND. n <= 39 ) .OR. cClass == "41" .OR. cClass == "61" .OR. cClass == "70"
 
 // --------- Modifica conto ----------
 PROCEDURE EditConto()
