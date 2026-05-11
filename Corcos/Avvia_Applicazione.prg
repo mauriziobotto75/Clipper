@@ -1,0 +1,15 @@
+
+FUNCTION Main()
+   SET DATE ITALIAN
+   SET DELETED ON
+   SET CENTURY ON
+
+   IF ! File("DATA/DISEGNI.DBF")
+      DbCreateDisegni()
+   ENDIF
+
+   USE DATA/DISEGNI SHARED
+   DO WHILE .T.
+      MenuPrincipale()
+   ENDDO
+RETURN NIL
